@@ -23,3 +23,7 @@ A fan-made guessing game built around the world of Wakfu. 100% made with Python!
 ## Disclaimer
 
 This is a fan-made project created purely for entertainment. All images, assets, and intellectual property belong to Ankama and the Wakfu development team. This project is not affiliated with or endorsed by Ankama in any way.
+
+## Contact Info
+
+For contact, reach out to me on Discord at **.wistfulheart** or send me an e-mail at **winterlapse0x@gmail.com**
