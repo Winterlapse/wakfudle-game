@@ -20,6 +20,6 @@ A fan-made guessing game built around the world of Wakfu.
 - **Against The Clock** — 15 rounds, 60 seconds total
 - **Endless** — Infinite rounds, no timer
 
-## Disclaimer:
+## Disclaimer
 
 This is a fan-made project created purely for entertainment. All images, assets, and intellectual property belong to Ankama and the Wakfu development team. This project is not affiliated with or endorsed by Ankama in any way.
