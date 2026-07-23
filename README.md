@@ -1,6 +1,6 @@
 # Wakfudle
 
-A fan-made guessing game built around the world of Wakfu. 100% made with Python!
+A fan-made guessing game built around the world of Wakfu. 100% made with Python.
 
 ## How to Play
 
