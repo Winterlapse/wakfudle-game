@@ -6,7 +6,7 @@ A fan-made guessing game, built around the world of Wakfu. 100% made with Python
 
 1. Download the latest release from [Releases](https://github.com/Winterlapse/wakfudle-game/releases)
 2. Extract the `.zip` file
-3. Run `Wakfudle.exe` — do not move it out of the extracted folder
+3. Run `Wakfudle.exe` — do not move it out of the extracted folder, it needs to be in the same directory as the `data` folder to work!
 
 ## Gamemodes
 
