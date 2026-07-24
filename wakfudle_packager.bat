@@ -1,0 +1,1 @@
+pyinstaller --onefile --windowed --name "Wakfudle" --add-data "screens;screens" wakfudle.py
