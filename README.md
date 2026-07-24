@@ -27,3 +27,10 @@ This is a fan-made project created purely for entertainment. All images, assets,
 ## Contact Info
 
 For contact, reach out to me on Discord at **.wistfulheart** or send me an e-mail at **winterlapse0x@gmail.com**
+
+## Screenshots
+
+<img width="594" height="523" alt="Screenshot 2026-07-23 223205" src="https://github.com/user-attachments/assets/eb8dd2bb-57ed-4bbf-bb86-c4de6046ae06" />
+<img width="589" height="525" alt="Screenshot 2026-07-23 223214" src="https://github.com/user-attachments/assets/342849da-5068-4f6d-a670-7701cbb3e42a" />
+<img width="593" height="527" alt="Screenshot 2026-07-23 223222" src="https://github.com/user-attachments/assets/42fa4d5a-28d9-48fa-b41f-591c400ebe47" />
+<img width="594" height="524" alt="Screenshot 2026-07-23 223249" src="https://github.com/user-attachments/assets/b9e7e0f7-d3bf-46ea-a80d-b53dc0c9cfa4" />
