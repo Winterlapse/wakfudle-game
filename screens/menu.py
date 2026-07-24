@@ -29,6 +29,6 @@ def show_menu(window, show_about, show_options): # shows the WHOLE!!!! main menu
     ctk.CTkButton(frame, text="Exit", width=200, fg_color="red", hover_color="dark red",
         command=window.destroy).pack(pady=5)
 
-    ctk.CTkLabel(frame, text="v1.0.0", font=("Arial", 10), text_color="gray").pack(anchor="sw", pady=5, padx=10)
+    ctk.CTkLabel(frame, text="v1.0.1", font=("Arial", 10), text_color="gray").pack(anchor="sw", pady=5, padx=10)
 
     return frame

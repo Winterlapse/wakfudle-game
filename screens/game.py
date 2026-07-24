@@ -1,6 +1,7 @@
 ## imports modules for game functionality - this file is the heart of the game! ##
 import os
 import random
+import string
 import customtkinter as ctk
 from PIL import Image
 
@@ -136,7 +137,7 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
             "For example, if you see a picture of Astrub Mountains,\n" \
             "the correct answer is 'Astrub Mountains', not just 'Astrub'.\n\n"
             "Also, while Mines are separated in-game, they are not in Wakguessr.\n\n"
-            "For example, 'Bonta Mines' will always be the correct answer, no matter which side of the Mines is being shown.\n\n"
+            "For example, 'Bonta Mines' will be the correct answer, no matter which part (Galleries or Depths) of the Mines is being shown.\n\n"
             "Have fun!")
 
     def show_image(image_path): # shows the image on the game screen
@@ -179,6 +180,7 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
         message_label.configure(text=random.choice(GAMESCREEN_MESSAGES))
         answer_entry.focus()
         answer_entry.delete(0, "end")
+        shortcut_label.configure(text="")
         if gameplay_mode != "against_the_clock":
             feedback_label.configure(text="")
         if total_rounds:
@@ -241,7 +243,8 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
                 window.after_cancel(timer_job[0])
         answered[0] = True
         rounds[0] += 1
-        if guess.strip().lower() == current_answer[0].strip().lower(): # increases score and streak if answer is correct. yay!
+        shortcut_label.configure(text="Press Enter to continue.")
+        if normalize(guess) == normalize(current_answer[0]): # increases score and streak if answer is correct. also disregards apostrophes from answer submission
             score[0] += 1
             streak[0] += 1
             if streak[0] > best_streak[0]:
@@ -256,7 +259,7 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
                     return
                 start_round()
                 return
-        else: # checks if the answer is wrong with some additional feedback like setting the streak back to zero - still deciding whether to remove 'current_answer' from the feedback or not. chud life
+        else: # checks if the answer is wrong with some additional feedback like setting the streak back to zero
             streak[0] = 0
             feedback_label.configure(text=f"Wrong! The correct answer was: {current_answer[0]}. Your streak has been lost.", text_color="red")
             if gameplay_mode == "against_the_clock":
@@ -285,9 +288,12 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
             window.after_cancel(elapsed_job[0])
         on_menu(score[0], rounds[0], best_streak[0])
 
+    def normalize(text): # function to normalize answer submissions - disregards punctuation characters like commas, periods and apostrophes
+        return text.strip().lower().translate(str.maketrans("", "", string.punctuation))
+
     def confirm_exit(): # triggers a confirmation messagebox when the player clicks to leave mid game
         import tkinter.messagebox as messagebox
-        if messagebox.askyesno("Quit", "Are you sure you want to quit? Your progress will be lost."):
+        if messagebox.askyesno("Quit", "Are you sure you want to quit? You will be sent back to the main menu and your progress will be lost."):
             show_results()
 
     ## builds the game UI - main frame ##
@@ -356,6 +362,9 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
     if gameplay_mode == "standard":
         ctk.CTkButton(right_column, text="Skip", command=lambda: start_round(skip=True), 
             fg_color="#d4a017", hover_color="#b8860b", width=200).pack(pady=5)
+
+    shortcut_label = ctk.CTkLabel(right_column, text="", font=("Arial", 11), text_color="gray")
+    shortcut_label.pack(pady=40)
 
     ## horizontal separator under columns ##
     ctk.CTkFrame(frame, height=2, fg_color="gray30").pack(fill="x", padx=10, pady=5 )
