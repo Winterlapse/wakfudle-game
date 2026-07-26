@@ -1,17 +1,18 @@
 ## imports modules for game functionality - this file is the heart of the game! ##
 import os
+import json
 import random
 import string
 import customtkinter as ctk
 from PIL import Image
 
-## funny message list. these will be randomly selected to appear under the image label in a game session ##
-GAMESCREEN_MESSAGES = [
+## message list - these will be randomly selected to appear under the image label in a game session (Wakguessr or Monster Guesser, respectively) ##
+WAKGUESSR_MESSAGES = [
     "I know this one!",
     "Looks four meal your... or something like that.",
     "I've seen this before. Maybe.",
     "I'm thinking I should give you a hint, but I don't really feel like it. Sorry.",
-    "There's probably a Dofus somewhere.",
+    "There's probably a Dofus hidden somewhere...",
     "I'll give you a hint. This one's in the World of Twelve.",
     "One gobball, two gobballs, three gobballs...",
     "Even Ogrest doesn't know where this is.",
@@ -25,6 +26,30 @@ GAMESCREEN_MESSAGES = [
     "Negi would like this place.",
     "Someone told me a certain Whisperer really likes capybaras.",
     "If you get this one right you might identify an item with four white slots tomorrow. Not quite sure what that means, though.",
+    "This place would look a hundred times better with some Bellaphones wandering around.",
+    "Sire Flexington hates this place. He said he would make it more 'purple' if he could... Not really sure what that means.",
+    "Hey so uh... You come here often?",
+    "Remember to stay hydrated. You could be sent to Ohwymi.",
+    "There could be a Sram completely hidden here and you wouldn't know.",
+]
+
+MONSTER_MESSAGES = [
+    "Is that a Gobball? Maybe not.",
+    "You could probably give this one a headpat, if you were brave enough.",
+    "I wouldn't want to meet this one in a dungeon.",
+    "Even Joris would run from this one.",
+    "This one looks friendly. Probably.",
+    "I hear this monster drops something good.",
+    "What's the name of this awful guy?",
+    "What a cute lil' guy! Let's grab him and put him in the Haven Paddock.",
+    "Pretty sure I've seen this one wandering around at the central park a few days ago.",
+    "Even Rushu thinks this one looks terrifying.",
+    "What a majestic creature.",
+    "I can sense some evilness in this one.",
+    "I can sense some kindness in this one.",
+    "I can sense some sadness in this one.",
+    "Would you hug it for five million kamas? Six? Se-, nevermind.",
+    "I think I saw this guy just standing still in front of the Sufokia marketplace. Not really sure what he was doing.",
 ]
 
 def load_regions(images_dir): # 'regions' directory management - loads regions for the classic 'Wakguessr' gamemode
@@ -42,17 +67,21 @@ def load_regions(images_dir): # 'regions' directory management - loads regions f
                     ]
                     if images:
                         key = subregion.split(" - ")[-1] if " - " in subregion else subregion
-                        data[key] = images
-
+                        for image in images:
+                            data[key] = {"display": image, "reveal": None}
     return data
 
-def load_monsters(monsters_dir, selected_types): # 'monsters' directory management - loads monsters for the (WIP) 'Monster Guesser' gamemode - also includes switches/toggles for variation depending on player preference!
+def load_monsters(monsters_dir, selected_types, mode): # 'monsters' directory management - loads monsters for the (WIP) 'Monster Guesser' gamemode - also includes switches/toggles for variation depending on player preference!
     data = {}
     type_map = {
         "Regular": "regular",
         "Dominants": "dominant",
-        "Archmonsters": "archmonster"
+        "Archmonsters": "archmonster",
+        "Intervention Bosses": "interventionbosses",
+        "Ultimate Bosses": "ultimatebosses"
     }
+    subfolder = "silhouette" if mode == "Silhouette" else "normal"
+
     for family in os.listdir(monsters_dir):
         family_path = os.path.join(monsters_dir, family)
         if not os.path.isdir(family_path):
@@ -60,18 +89,22 @@ def load_monsters(monsters_dir, selected_types): # 'monsters' directory manageme
         for monster_type, folder_name in type_map.items():
             if monster_type not in selected_types:
                 continue
-            type_path = os.path.join(family_path, folder_name)
+            type_path = os.path.join(family_path, folder_name, subfolder)
             if not os.path.isdir(type_path):
                 continue
-            images = [
-                os.path.join(type_path, file)
-                for file in os.listdir(type_path)
-                if file.endswith(".png")
-            ]
-            for image in images:
-                name = os.path.splitext(os.path.basename(image))[0]
-                data[name] = [image]
-
+            for file in os.listdir(type_path):
+                if not file.endswith(".png"):
+                    continue
+                name = os.path.splitext(file)[0]
+                if name.startswith("S_"):
+                    name = name[2:]
+                silhouette_path = os.path.join(type_path, file)
+                # find matching normal image
+                normal_path = os.path.join(family_path, folder_name, "normal", f"{name}.png")
+                data[name] = {
+                    "display": silhouette_path if mode == "Silhouette" else normal_path,
+                    "reveal": normal_path if mode == "Silhouette" else None
+                }
     return data
 
 def load_items(items_dir, selected_rarities): # 'items' directory management - loads items for the (WIP) 'Item Guesser' gamemode - includes switches/toggles as well!
@@ -83,18 +116,29 @@ def load_items(items_dir, selected_rarities): # 'items' directory management - l
         for file in os.listdir(rarity_path):
             if file.endswith(".png"):
                 name = os.path.splitext(file)[0]
-                data[name] = [os.path.join(rarity_path, file)]
-
+                data[name] = {"display": os.path.join(rarity_path, file), "reveal": None}
     return data
 
-def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the core. shows the actual game and has all its other features like Streaks and Timer
+def load_silhouette_groups(data_dir):
+    groups_path = os.path.join(data_dir, "silhouette_groups.json")
+    if os.path.exists(groups_path):
+        with open(groups_path, "r") as f:
+            return json.load(f)
+    return []
+
+def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): # the core. shows the actual game and has all its other features like Streaks and Timer
     ## loads the right data based on the gamemode and selected options ##
     if gamemode == "Wakguessr":
         data = load_regions(dirs["regions"])
     elif gamemode == "Monster Guesser":
-        data = load_monsters(dirs["monsters"], selected)
+        data = load_monsters(dirs["monsters"], selected, mode)
     else:
         data = load_items(dirs["items"], selected)
+
+    if gamemode == "Monster Guesser" and mode == "Silhouette":
+        silhouette_groups = load_silhouette_groups(os.path.dirname(dirs["monsters"]))
+    else:
+        silhouette_groups = []
 
     ## gameplay mode settings ##
     if gameplay_mode == "standard":
@@ -107,13 +151,14 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
         total_rounds = None
         timer_duration = None
 
-    ## state ##
+    ## state variables! ##
     score = [0]
     rounds = [0]
     streak = [0]
     best_streak = [0]
     answered = [False]
     current_answer = [None]
+    current_paths = [None]
     time_left = [timer_duration]
     timer_job = [None]
     elapsed = [0]
@@ -123,9 +168,8 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
 
     def build_queue(): # builds a queue of images that are then later shuffled in a random order - this essentially avoids duplicates within the same session
         queue = []
-        for name, images in data.items():
-            for image in images:
-                queue.append((name, image))
+        for name, paths in data.items():
+            queue.append((name, paths))
         random.shuffle(queue)
         image_queue.clear()
         image_queue.extend(queue)
@@ -173,11 +217,13 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
                 return
         if not image_queue: # builds an image queue when there isn't one - essentially builds one when a new game session is started
             build_queue()
-        name, image_path = image_queue.pop(0)
+        name, paths = image_queue.pop(0)
         current_answer[0] = name
+        current_paths[0] = paths
         answered[0] = False
-        show_image(image_path)
-        message_label.configure(text=random.choice(GAMESCREEN_MESSAGES))
+        show_image(paths["display"])
+        messages = MONSTER_MESSAGES if gamemode == "Monster Guesser" else WAKGUESSR_MESSAGES
+        message_label.configure(text=random.choice(messages))
         answer_entry.focus()
         answer_entry.delete(0, "end")
         shortcut_label.configure(text="")
@@ -244,7 +290,9 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
         answered[0] = True
         rounds[0] += 1
         shortcut_label.configure(text="Press Enter to continue.")
-        if normalize(guess) == normalize(current_answer[0]): # increases score and streak if answer is correct. also disregards apostrophes from answer submission
+        if mode == "Silhouette" and current_paths[0] and current_paths[0]["reveal"]:
+            show_image(current_paths[0]["reveal"])
+        if normalize(guess) == normalize(current_answer[0]) or (gamemode == "Monster Guesser" and mode == "Silhouette" and is_pity_match(guess, current_answer[0])): # increases score and streak if answer is correct. also disregards apostrophes from answer submission
             score[0] += 1
             streak[0] += 1
             if streak[0] > best_streak[0]:
@@ -291,6 +339,15 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
     def normalize(text): # function to normalize answer submissions - disregards punctuation characters like commas, periods and apostrophes
         return text.strip().lower().translate(str.maketrans("", "", string.punctuation))
 
+    def is_pity_match(guess, correct):
+        normalized_guess = normalize(guess)
+        normalized_correct = normalize(correct)
+        for group in silhouette_groups:
+            normalized_group = [normalize(g) for g in group]
+            if normalized_correct in normalized_group and normalized_guess in normalized_group:
+                return True
+        return False
+
     def confirm_exit(): # triggers a confirmation messagebox when the player clicks to leave mid game
         import tkinter.messagebox as messagebox
         if messagebox.askyesno("Quit", "Are you sure you want to quit? You will be sent back to the main menu and your progress will be lost."):
@@ -316,7 +373,7 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
     image_label = ctk.CTkLabel(left_column, text="") # image label. The home of image :)
     image_label.pack(expand=True, anchor="n", pady=(50, 0))
 
-    message_label = ctk.CTkLabel(left_column, text=random.choice(GAMESCREEN_MESSAGES),
+    message_label = ctk.CTkLabel(left_column, text=random.choice(WAKGUESSR_MESSAGES), # text label for the messages that appear under the image :)
         font=("Arial", 12, "italic"), text_color="gray", wraplength=255)
     message_label.pack(pady=(0, 70))
 
@@ -356,14 +413,14 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
     window.bind("<Return>", lambda event: start_round() if answered[0] else submit_answer())
     window.bind("<Control-s>", lambda event: start_round(skip=True) if gameplay_mode == "standard" else None)
 
-    ctk.CTkButton(right_column, text="Submit", command=submit_answer, 
+    ctk.CTkButton(right_column, text="Submit", command=submit_answer, # submit button :)
         fg_color="green", hover_color="dark green", width=200).pack(pady=5)
 
-    if gameplay_mode == "standard":
+    if gameplay_mode == "standard": # skip button - only displays for wakguessr in standard mode
         ctk.CTkButton(right_column, text="Skip", command=lambda: start_round(skip=True), 
             fg_color="#d4a017", hover_color="#b8860b", width=200).pack(pady=5)
 
-    shortcut_label = ctk.CTkLabel(right_column, text="", font=("Arial", 11), text_color="gray")
+    shortcut_label = ctk.CTkLabel(right_column, text="", font=("Arial", 11), text_color="gray") # text label for enter key shortcut
     shortcut_label.pack(pady=40)
 
     ## horizontal separator under columns ##
@@ -377,7 +434,7 @@ def show_game(window, gamemode, gameplay_mode, selected, dirs, on_menu): # the c
         ctk.CTkButton(bottom_frame, text="i Info", width=80, command=show_info,
             fg_color="#1f6aa5", hover_color="#144d7a").pack(side="left")
 
-    ctk.CTkButton(bottom_frame, text="Exit", command=confirm_exit,
+    ctk.CTkButton(bottom_frame, text="Exit", command=confirm_exit, # exit button - command triggers a confirm exit messagebox prompt when clicked
         fg_color="red", hover_color="dark red", width=200).pack(side="right", padx="9")
 
     build_queue()

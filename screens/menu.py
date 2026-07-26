@@ -14,9 +14,8 @@ def show_menu(window, show_about, show_options): # shows the WHOLE!!!! main menu
     ctk.CTkButton(frame, text="Wakguessr", width=200, fg_color="green", hover_color="dark green",
         command=lambda: show_options("Wakguessr")).pack(pady=10)
 
-    ctk.CTkButton(frame, text="Monster Guesser", width=200, fg_color="gray", hover_color="gray",
-        state="disabled").pack(pady=(2, 0))
-    ctk.CTkLabel(frame, text="Coming soon!", font=("Arial", 10), text_color="gray").pack()
+    ctk.CTkButton(frame, text="Monster Guesser", width=200, fg_color="#d4a017", hover_color="#b8860b",
+        command=lambda: show_options("Monster Guesser")).pack(pady=10)
 
     ctk.CTkButton(frame, text="Item Guesser", width=200, fg_color="gray", hover_color="gray",
         state="disabled").pack(pady=(2, 0))
@@ -29,6 +28,6 @@ def show_menu(window, show_about, show_options): # shows the WHOLE!!!! main menu
     ctk.CTkButton(frame, text="Exit", width=200, fg_color="red", hover_color="dark red",
         command=window.destroy).pack(pady=5)
 
-    ctk.CTkLabel(frame, text="v1.0.1", font=("Arial", 10), text_color="gray").pack(anchor="sw", pady=5, padx=10)
+    ctk.CTkLabel(frame, text="v1.1.1", font=("Arial", 10), text_color="gray").pack(anchor="sw", pady=5, padx=10)
 
     return frame

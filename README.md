@@ -11,7 +11,7 @@ A fan-made guessing game, built around the world of Wakfu. 100% made with Python
 ## Gamemodes
 
 - **Wakguesser** — Guess the subregion of the World of Twelve based on an in-game screenshot
-- **Monster Guesser** *(Coming Soon)* — Guess the name of a monster based on its image
+- **Monster Guesser** *(New!)* — Guess the name of a monster based on its image (+ Silhouette Mode for Monster Experts!)
 - **Item Guesser** *(Coming Soon)* — Guess the name of an item based on its image
 
 ## Gameplay Modes

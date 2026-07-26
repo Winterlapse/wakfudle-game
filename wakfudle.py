@@ -79,22 +79,22 @@ def main(): # all functions contained inside this one are for switching frames (
         current_frame[0] = new_frame
         new_frame.pack(fill="both", expand=True)
 
-    def go_to_results(gamemode, gameplay_mode, score, rounds, best_streak, selected): # switches to the 'Results' window if the conditions are met
+    def go_to_results(gamemode, gameplay_mode, score, rounds, best_streak, selected, mode="Normal"): # switches to the 'Results' window if the conditions are met
         total_rounds = 10 if gameplay_mode == "standard" else 15 if gameplay_mode == "against_the_clock" else None
         switch_frame(results_screen(window, gamemode, gameplay_mode, score, rounds, best_streak, total_rounds,
-        go_to_menu,
-        lambda: go_to_game(gamemode, gameplay_mode, selected)))
+            go_to_menu,
+            lambda: go_to_game(gamemode, gameplay_mode, selected, mode)))
 
-    def go_to_game(gamemode, gameplay_mode, selected): # switches to the actual 'Game' window. you know, where you actually play the game
-        switch_frame(show_game(window, gamemode, gameplay_mode, selected, {
+    def go_to_game(gamemode, gameplay_mode, selected, mode="Normal"): # switches to the actual 'Game' window. you know, where you actually play the game
+        switch_frame(show_game(window, gamemode, gameplay_mode, selected, mode, {
             "regions": REGIONS_DIR,
             "monsters": MONSTERS_DIR,
             "items": ITEMS_DIR
-        }, lambda score, rounds, best_streak: go_to_results(gamemode, gameplay_mode, score, rounds, best_streak, selected)))
+        }, lambda score, rounds, best_streak: go_to_results(gamemode, gameplay_mode, score, rounds, best_streak, selected, mode)))
 
     def go_to_options(gamemode): # switches to the 'Options' window - the one that shows up after you select a gamemode in the Main Menu
         switch_frame(show_options(window, gamemode, go_to_menu,
-            lambda gameplay_mode, selected: go_to_game(gamemode, gameplay_mode, selected)))
+            lambda gameplay_mode, selected, mode: go_to_game(gamemode, gameplay_mode, selected, mode)))
 
     def go_to_about(): # switches to the 'About' window
         switch_frame(show_about(window, go_to_menu))
