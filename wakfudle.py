@@ -11,6 +11,12 @@ from screens.options import show_options
 from screens.game import show_game
 from screens.results import show_results as results_screen
 
+last_settings = { # dictionary used for saving the last settings used in a game session
+    "Wakguessr": {"selected": [], "mode": "Normal"},
+    "Monster Guesser": {"selected": ["Regular", "Dominants", "Archmonsters", "Intervention Bosses", "Ultimate Bosses"], "mode": "Normal"},
+    "Item Guesser": {"selected": ["Legendary", "Epic", "Relic"], "mode": "Normal"}
+}
+
 if getattr(sys, 'frozen', False): # 'data' folder directory management
     BASE_DIR = os.path.dirname(sys.executable)
 else:
@@ -67,6 +73,7 @@ def show_image(image_label, image_path): # shows the selected image on the progr
 
 def main(): # all functions contained inside this one are for switching frames (windows) whenever a button is clicked - 'Results' and 'About' for example
     window = ctk.CTk()
+    window.iconbitmap(os.path.join(BASE_DIR, "icon.ico")) # shows the game icon in the window frame. made by me using canva :)
     window.title("Wakfudle")
     window.minsize(600, 500)
     window.resizable(False, False)
@@ -81,11 +88,13 @@ def main(): # all functions contained inside this one are for switching frames (
 
     def go_to_results(gamemode, gameplay_mode, score, rounds, best_streak, selected, mode="Normal"): # switches to the 'Results' window if the conditions are met
         total_rounds = 10 if gameplay_mode == "standard" else 15 if gameplay_mode == "against_the_clock" else None
-        switch_frame(results_screen(window, gamemode, gameplay_mode, score, rounds, best_streak, total_rounds,
+        switch_frame(results_screen(window, gamemode, gameplay_mode, score, rounds, best_streak, total_rounds, selected, mode,
             go_to_menu,
             lambda: go_to_game(gamemode, gameplay_mode, selected, mode)))
 
     def go_to_game(gamemode, gameplay_mode, selected, mode="Normal"): # switches to the actual 'Game' window. you know, where you actually play the game
+        last_settings[gamemode]["selected"] = selected
+        last_settings[gamemode]["mode"] = mode
         switch_frame(show_game(window, gamemode, gameplay_mode, selected, mode, {
             "regions": REGIONS_DIR,
             "monsters": MONSTERS_DIR,
@@ -94,7 +103,8 @@ def main(): # all functions contained inside this one are for switching frames (
 
     def go_to_options(gamemode): # switches to the 'Options' window - the one that shows up after you select a gamemode in the Main Menu
         switch_frame(show_options(window, gamemode, go_to_menu,
-            lambda gameplay_mode, selected, mode: go_to_game(gamemode, gameplay_mode, selected, mode)))
+            lambda gameplay_mode, selected, mode: go_to_game(gamemode, gameplay_mode, selected, mode),
+            last_settings[gamemode]))
 
     def go_to_about(): # switches to the 'About' window
         switch_frame(show_about(window, go_to_menu))

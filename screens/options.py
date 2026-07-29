@@ -4,7 +4,7 @@ import customtkinter as ctk
 MONSTER_TYPES = ["Regular", "Dominants", "Archmonsters", "Intervention Bosses", "Ultimate Bosses"] # used for switches for the 'Monster Guesser' gamemode
 ITEM_RARITIES = ["Legendary", "Epic", "Relic"] # used for switches for the 'Item Guesser' gamemode
 
-def show_options(window, gamemode, on_back, on_start): # shows the options menu. appears when you click on a gamemode. contains the gameplay modes and switches for 'Monster Guesser' and 'Item Guesser' gamemodes
+def show_options(window, gamemode, on_back, on_start, last_settings=None): # shows the options menu. appears when you click on a gamemode. contains the gameplay modes and switches for 'Monster Guesser' and 'Item Guesser' gamemodes
     frame = ctk.CTkFrame(window)
 
     scroll_frame = ctk.CTkScrollableFrame(frame)
@@ -30,7 +30,8 @@ def show_options(window, gamemode, on_back, on_start): # shows the options menu.
         row1 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row1.pack(pady=3)
         for monster_type in ["Regular", "Dominants", "Archmonsters"]:
-            var = ctk.BooleanVar(value=True)
+            default = True if last_settings is None else monster_type in last_settings["selected"]
+            var = ctk.BooleanVar(value=default)
             ctk.CTkSwitch(row1, text=monster_type, variable=var).pack(side="left", padx=10)
             toggles[monster_type] = var
 
@@ -38,12 +39,15 @@ def show_options(window, gamemode, on_back, on_start): # shows the options menu.
         row2 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row2.pack(pady=3)
         for monster_type in ["Intervention Bosses", "Ultimate Bosses"]:
-            var = ctk.BooleanVar(value=True)
+            default = True if last_settings is None else monster_type in last_settings["selected"]
+            var = ctk.BooleanVar(value=default)
             ctk.CTkSwitch(row2, text=monster_type, variable=var).pack(side="left", padx=10)
             toggles[monster_type] = var
 
+        # text labels for the last settings
         ctk.CTkLabel(scroll_frame, text="Image Mode:", font=("Arial", 12)).pack(pady=(15, 5))
-        image_mode = ctk.StringVar(value="Normal")
+        default_mode = "Normal" if last_settings is None else last_settings["mode"]
+        image_mode = ctk.StringVar(value=default_mode)
 
         # horizontal Image Mode buttons
         mode_row = ctk.CTkFrame(scroll_frame, fg_color="transparent")

@@ -5,7 +5,8 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 def show_menu(window, show_about, show_options): # shows the WHOLE!!!! main menu. stuff like buttons and other text labels
-    frame = ctk.CTkFrame(window)
+    frame = ctk.CTkFrame(window, height=500)
+    frame.pack_propagate(False)
 
     ctk.CTkLabel(frame, text="Wakfudle", font=("Arial", 36, "bold")).pack(pady=10)
 
@@ -21,13 +22,16 @@ def show_menu(window, show_about, show_options): # shows the WHOLE!!!! main menu
         state="disabled").pack(pady=(2, 0))
     ctk.CTkLabel(frame, text="Coming soon!", font=("Arial", 10), text_color="gray").pack()
 
-    ctk.CTkFrame(frame, height=150, fg_color="transparent").pack()  # spacer
+    ctk.CTkFrame(frame, height=195, fg_color="transparent").pack()  # spacer
 
     ctk.CTkButton(frame, text="About", width=200, fg_color="gray", hover_color="dark gray",
         command=show_about).pack(pady=5)
-    ctk.CTkButton(frame, text="Exit", width=200, fg_color="red", hover_color="dark red",
-        command=window.destroy).pack(pady=5)
 
-    ctk.CTkLabel(frame, text="v1.1.1", font=("Arial", 10), text_color="gray").pack(anchor="sw", pady=5, padx=10)
+    exit_button = ctk.CTkButton(frame, text="Exit", width=200, fg_color="red", hover_color="dark red",
+        command=window.destroy)
+    exit_button.pack(pady=5)
+
+    version_label = ctk.CTkLabel(frame, text="v1.1.2", font=("Arial", 10), text_color="gray")
+    version_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-4)
 
     return frame

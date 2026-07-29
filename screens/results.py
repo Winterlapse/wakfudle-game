@@ -1,7 +1,15 @@
 ## imports ctk for results screen functionality ##
 import customtkinter as ctk
 
-def show_results(window, gamemode, gameplay_mode, score, rounds, best_streak, total_rounds, on_menu, on_play_again): # the whole results screen! shows several text labels like your final score and best streak.
+def format_settings(gamemode, selected, mode): # formats the last settings for a cleaner look. doesn't show anything if Wakguessr was played
+    if gamemode == "Wakguessr":
+        return ""
+    if gamemode == "Monster Guesser":
+        types = ", ".join(selected) if selected else ""
+        return f"{types}\nImage Mode: {mode}"
+    return ", ".join(selected) if selected else ""
+
+def show_results(window, gamemode, gameplay_mode, score, rounds, best_streak, total_rounds, selected, mode, on_menu, on_play_again): # the whole results screen! shows several text labels like your final score and best streak.
     frame = ctk.CTkFrame(window)
 
     ctk.CTkLabel(frame, text="Game Over!", font=("Arial", 28, "bold")).pack(pady=20)
@@ -26,7 +34,14 @@ def show_results(window, gamemode, gameplay_mode, score, rounds, best_streak, to
 
     ctk.CTkLabel(frame, text=msg, font=("Arial", 14), text_color=color).pack(pady=10)
 
-    ctk.CTkFrame(frame, height=110, fg_color="transparent").pack() # spacer
+    ctk.CTkFrame(frame, height=40, fg_color="transparent").pack() # spacer
+
+    settings_text = format_settings(gamemode, selected, mode)
+    if settings_text:
+        ctk.CTkLabel(frame, text="Settings played:", font=("Arial", 13), text_color="gray").pack()
+        ctk.CTkLabel(frame, text=settings_text, font=("Arial", 11), text_color="gray", justify="center").pack(pady=3)
+
+    ctk.CTkFrame(frame, height=70, fg_color="transparent").pack() # spacer
 
     ctk.CTkButton(frame, text="Play Again", width=200, fg_color="green", hover_color="dark green", 
         command=on_play_again).pack(pady=10)

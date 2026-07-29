@@ -10,6 +10,7 @@ dist/
 
 # Other
 *.zip
+*.ico
 
 # Data folder
 data/

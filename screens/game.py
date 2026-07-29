@@ -31,6 +31,9 @@ WAKGUESSR_MESSAGES = [
     "Hey so uh... You come here often?",
     "Remember to stay hydrated. You could be sent to Ohwymi.",
     "There could be a Sram completely hidden here and you wouldn't know.",
+    "Eltiskuterie spent his vacation days here. Some say he never came back, though.",
+    "Maybe try asking the locals?",
+    "This place is so unknown you couldn't even see it from the top of Mount Zinit."
 ]
 
 MONSTER_MESSAGES = [
@@ -50,6 +53,10 @@ MONSTER_MESSAGES = [
     "I can sense some sadness in this one.",
     "Would you hug it for five million kamas? Six? Se-, nevermind.",
     "I think I saw this guy just standing still in front of the Sufokia marketplace. Not really sure what he was doing.",
+    "I couldn't imagine living the life of whatever this thing is. Must really be miserable.",
+    "Did Osamodas even approve of the existence of this thing?",
+    "Would you rather have 2 kamas... or 1 kama? Both are being stolen by a greedy Drheller anyway.",
+    "I wonder if Stompion and this guy are siblings.",
 ]
 
 def load_regions(images_dir): # 'regions' directory management - loads regions for the classic 'Wakguessr' gamemode
@@ -67,8 +74,10 @@ def load_regions(images_dir): # 'regions' directory management - loads regions f
                     ]
                     if images:
                         key = subregion.split(" - ")[-1] if " - " in subregion else subregion
+                        if key not in data:
+                            data[key] = []
                         for image in images:
-                            data[key] = {"display": image, "reveal": None}
+                            data[key].append({"display": image, "reveal": None})
     return data
 
 def load_monsters(monsters_dir, selected_types, mode): # 'monsters' directory management - loads monsters for the (WIP) 'Monster Guesser' gamemode - also includes switches/toggles for variation depending on player preference!
@@ -80,7 +89,7 @@ def load_monsters(monsters_dir, selected_types, mode): # 'monsters' directory ma
         "Intervention Bosses": "interventionbosses",
         "Ultimate Bosses": "ultimatebosses"
     }
-    subfolder = "silhouette" if mode == "Silhouette" else "normal"
+    subfolder = "silhouette" if mode == "Silhouette" else "normal" # searches for silhouette images if Silhouette image mode was selected
 
     for family in os.listdir(monsters_dir):
         family_path = os.path.join(monsters_dir, family)
@@ -119,8 +128,15 @@ def load_items(items_dir, selected_rarities): # 'items' directory management - l
                 data[name] = {"display": os.path.join(rarity_path, file), "reveal": None}
     return data
 
-def load_silhouette_groups(data_dir):
+def load_silhouette_groups(data_dir): # loads silhouette groups - used for monsters with identical silhouettes
     groups_path = os.path.join(data_dir, "silhouette_groups.json")
+    if os.path.exists(groups_path):
+        with open(groups_path, "r") as f:
+            return json.load(f)
+    return []
+
+def load_normal_groups(data_dir): # loads normal groups - used for monsters with identical sprites (colors and shape)
+    groups_path = os.path.join(data_dir, "normal_groups.json")
     if os.path.exists(groups_path):
         with open(groups_path, "r") as f:
             return json.load(f)
@@ -135,8 +151,11 @@ def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): #
     else:
         data = load_items(dirs["items"], selected)
 
-    if gamemode == "Monster Guesser" and mode == "Silhouette":
-        silhouette_groups = load_silhouette_groups(os.path.dirname(dirs["monsters"]))
+    if gamemode == "Monster Guesser":
+        if mode == "Silhouette":
+            silhouette_groups = load_silhouette_groups(os.path.dirname(dirs["monsters"]))
+        else:
+            silhouette_groups = load_normal_groups(os.path.dirname(dirs["monsters"]))
     else:
         silhouette_groups = []
 
@@ -168,8 +187,12 @@ def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): #
 
     def build_queue(): # builds a queue of images that are then later shuffled in a random order - this essentially avoids duplicates within the same session
         queue = []
-        for name, paths in data.items():
-            queue.append((name, paths))
+        for name, paths_list in data.items():
+            if isinstance(paths_list, list):
+                for paths in paths_list:
+                    queue.append((name, paths))
+            else:
+                queue.append((name, paths_list))
         random.shuffle(queue)
         image_queue.clear()
         image_queue.extend(queue)
@@ -194,7 +217,7 @@ def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): #
         draw = ImageDraw.Draw(mask)
         draw.rounded_rectangle([(0, 0), image.size], radius=radius, fill=255)
 
-        rounded = Image.new("RGBA", image.size, (0, 0, 0, 0))
+        rounded = Image.new("RGBA", image.size, (0, 0, 0, 0)) # gives the image rounded corners
         rounded.paste(image, mask=mask)
 
         ctk_image = ctk.CTkImage(light_image=rounded, dark_image=rounded, size=(image.width, image.height))
@@ -292,7 +315,7 @@ def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): #
         shortcut_label.configure(text="Press Enter to continue.")
         if mode == "Silhouette" and current_paths[0] and current_paths[0]["reveal"]:
             show_image(current_paths[0]["reveal"])
-        if normalize(guess) == normalize(current_answer[0]) or (gamemode == "Monster Guesser" and mode == "Silhouette" and is_pity_match(guess, current_answer[0])): # increases score and streak if answer is correct. also disregards apostrophes from answer submission
+        if normalize(guess) == normalize(current_answer[0]) or (gamemode == "Monster Guesser" and is_pity_match(guess, current_answer[0])): # increases score and streak if answer is correct. also disregards punctuation characters from answer submission
             score[0] += 1
             streak[0] += 1
             if streak[0] > best_streak[0]:
@@ -337,9 +360,12 @@ def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): #
         on_menu(score[0], rounds[0], best_streak[0])
 
     def normalize(text): # function to normalize answer submissions - disregards punctuation characters like commas, periods and apostrophes
-        return text.strip().lower().translate(str.maketrans("", "", string.punctuation))
+        text = text.strip().lower()
+        text = text.replace("-", " ")
+        text = text.translate(str.maketrans("", "", "',.:;"))
+        return text
 
-    def is_pity_match(guess, correct):
+    def is_pity_match(guess, correct): # pity system for silhouette mode. if two or more mobs are in the same group due to identical silhouettes, guessing either of them will be deemed as correct
         normalized_guess = normalize(guess)
         normalized_correct = normalize(correct)
         for group in silhouette_groups:
@@ -375,7 +401,7 @@ def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): #
 
     message_label = ctk.CTkLabel(left_column, text=random.choice(WAKGUESSR_MESSAGES), # text label for the messages that appear under the image :)
         font=("Arial", 12, "italic"), text_color="gray", wraplength=255)
-    message_label.pack(pady=(0, 70))
+    message_label.pack(pady=(0, 120))
 
     ## vertical separator between columns ##
     ctk.CTkFrame(columns_frame, width=2, fg_color="gray30").pack(side="left", fill="y", pady=10)
@@ -405,10 +431,10 @@ def show_game(window, gamemode, gameplay_mode, selected, mode, dirs, on_menu): #
     else:
         timer_label = ctk.CTkLabel(right_column, text="")
 
-    feedback_label = ctk.CTkLabel(right_column, text="", font=("Arial", 12), wraplength=200) # shows the feedback when an answer is entered
+    feedback_label = ctk.CTkLabel(right_column, text="", font=("Arial", 12), wraplength=200, height=60) # shows the feedback when an answer is entered
     feedback_label.pack(pady=5, anchor="w")
 
-    answer_entry = ctk.CTkEntry(right_column, width=200, font=("Arial", 13)) # answer entry field
+    answer_entry = ctk.CTkEntry(right_column, width=200, font=("Arial", 13), placeholder_text="Enter your answer here...") # answer entry field
     answer_entry.pack(pady=5)
     window.bind("<Return>", lambda event: start_round() if answered[0] else submit_answer())
     window.bind("<Control-s>", lambda event: start_round(skip=True) if gameplay_mode == "standard" else None)
