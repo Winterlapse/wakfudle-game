@@ -6,19 +6,19 @@ A fan-made guessing game, built around the world of Wakfu. 100% made with Python
 
 1. Download the latest release from [Releases](https://github.com/Winterlapse/wakfudle-game/releases)
 2. Extract the `.zip` file
-3. Run `Wakfudle.exe` — do not move it out of the extracted folder, it needs to be in the same directory as the `data` folder to work!
+3. Run `Wakfudle.exe` - do not move it out of the extracted folder, it needs to be in the same directory as the `data` folder to work!
 
 ## Gamemodes
 
-- **Wakguesser** — Guess the subregion of the World of Twelve based on an in-game screenshot
-- **Monster Guesser** *(New!)* — Guess the name of a monster based on its image (+ Silhouette Mode for Monster Experts!)
-- **Item Guesser** *(Coming Soon)* — Guess the name of an item based on its image
+- **Wakguesser** - Guess the subregion of the World of Twelve based on an in-game screenshot
+- **Monster Guesser** *(New!)* - Guess the name of a monster based on its image (+ Silhouette Mode for Monster Experts!)
+- **Item Guesser** *(Coming Soon)* - Guess the name of an item based on its image
 
 ## Gameplay Modes
 
-- **Standard** — 10 rounds, 30 seconds per round
-- **Against the Clock** — 15 rounds, 60 seconds total
-- **Endless** — Infinite rounds, no timer
+- **Standard** - 10 rounds, 30 seconds per round
+- **Against the Clock** - 15 rounds, 60 seconds total
+- **Endless** - Infinite rounds, no timer
 
 ## Disclaimer
 
